@@ -1,0 +1,61 @@
+﻿@model NotinLite.Models.Note
+
+@{
+    ViewData["Title"] = "Note Details";
+}
+
+@* Optional: Add reference to icon library if you use one *@
+@* Example using Font Awesome: Add CSS link in _Layout.cshtml head, or install package *@
+
+
+@* Center the details container *@
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        @* Allow slightly wider column for content viewing *@
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                @* Light header background *@
+                <h4 class="mb-0">
+                    <i class="fas fa-sticky-note me-2 text-primary"></i> @* Optional Note Icon *@
+                    @Html.DisplayFor(model => model.Title)
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="note-content mb-4" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.6;">
+                    @Html.DisplayFor(model => model.Content)
+                </div>
+
+                <hr />
+
+                <div class="note-metadata text-muted small">
+                    <div class="row">
+                        <div class="col-md-6 mb-2 mb-md-0">
+                            <strong>Created:</strong> @Model.CreatedDate.ToString("f") @* Full date/time format *@
+                        </div>
+                        <div class="col-md-6 text-md-end">
+                            @* Align right on medium+ screens *@
+                            <strong>Last Modified:</strong> @Model.ModifiedDate.ToString("f")
+                        </div>
+                    </div>
+                </div>
+            </div> @* End Card Body *@
+
+            <div class="card-footer bg-transparent border-top-0 pt-0">
+                @* Remove footer bg/border, remove top padding *@
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to List
+                    </a>
+                    <a asp-action="Edit" asp-route-id="@Model.NoteId" class="btn btn-primary">
+                        <i class="fas fa-pencil-alt me-1"></i>Edit Note
+                    </a>
+                </div>
+            </div> @* End Card Footer *@
+
+        </div> @* End Card *@
+
+    </div> @* End Column *@
+</div> @* End Row *@
+
+@* No scripts needed specifically for this view usually *@

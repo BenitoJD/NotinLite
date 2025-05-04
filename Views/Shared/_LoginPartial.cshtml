@@ -1,0 +1,46 @@
+﻿@using System.Security.Claims
+<ul class="navbar-nav">
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle text-dark d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <div>
+                    <small class="d-block text-muted">My Account</small>
+                </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end bg-light">
+                <li>
+                    <h6 class="dropdown-header">Signed in as @User.Identity.Name</h6>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item" asp-controller="Notes" asp-action="Index">
+                        My Notes
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <form class="d-inline" asp-controller="Account" asp-action="Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="dropdown-item">
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="btn btn-outline-success me-2" asp-controller="Account" asp-action="Login">
+                Login
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="btn btn-success" asp-controller="Account" asp-action="Register">
+                Register
+            </a>
+        </li>
+    }
+</ul>

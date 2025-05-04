@@ -1,0 +1,82 @@
+﻿@{
+    ViewData["Title"] = "Welcome to Notin Lite";
+}
+@using System.Security.Claims
+
+
+
+<div class="container px-4 py-5 text-center">
+
+    <div class="lc-block mb-5">
+        <i class="fas fa-book-open fa-4x text-primary mb-4"></i> 
+        <h1 class="display-4 fw-bold">Notin Lite</h1>
+        <p class="lead col-lg-8 mx-auto text-muted">
+            Your simple, fast, and secure space to capture ideas, organize thoughts, and manage your notes effortlessly.
+        </p>
+    </div>
+
+    <div class="lc-block">
+        @if (User.Identity != null && User.Identity.IsAuthenticated)
+        {
+            <p class="fs-5 mb-4">
+                Welcome back, <strong class="text-primary">@User.Identity.Name</strong>!
+            </p>
+            <a class="btn btn-primary btn-lg px-4 py-2 me-md-2 fw-bold shadow-sm" asp-controller="Notes" asp-action="Index">
+                <i class="fas fa-list-alt me-2"></i> View My Notes
+            </a>
+            
+            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                 @Html.AntiForgeryToken()
+                 <button type="submit" class="btn btn-outline-secondary btn-lg px-4 py-2">
+                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                 </button>
+            </form>
+             
+        }
+        else
+        {
+            <p class="fs-5 mb-4">Ready to get organized?</p>
+            <div class="d-grid gap-3 d-sm-flex justify-content-sm-center">
+                <a class="btn btn-primary btn-lg px-4 py-2 me-sm-3 fw-bold shadow-sm" asp-controller="Account" asp-action="Register">
+                    <i class="fas fa-user-plus me-2"></i> Get Started (Register)
+                </a>
+                <a class="btn btn-outline-secondary btn-lg px-4 py-2 shadow-sm" asp-controller="Account" asp-action="Login">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login
+                </a>
+            </div>
+        }
+    </div>
+
+    <hr class="my-5 col-lg-6 mx-auto"> 
+
+    <div class="row g-4 justify-content-center">
+        <div class="col-lg-3 col-md-4 text-center">
+            <div class="lc-block mb-3">
+                <i class="fas fa-feather-alt fa-2x text-success"></i>
+            </div>
+            <div class="lc-block">
+                <h4 class="h5">Simple</h4>
+                <p class="small text-muted">Focus on your notes with a clean, intuitive interface.</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-4 text-center">
+            <div class="lc-block mb-3">
+                <i class="fas fa-shield-alt fa-2x text-info"></i>
+            </div>
+            <div class="lc-block">
+                <h4 class="h5">Secure</h4>
+                <p class="small text-muted">Your notes are protected with secure login and data handling.</p>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-4 text-center">
+            <div class="lc-block mb-3">
+                <i class="fas fa-bolt fa-2x text-warning"></i>
+            </div>
+            <div class="lc-block">
+                <h4 class="h5">Fast</h4>
+                <p class="small text-muted">Quick access and lightweight performance for efficiency.</p>
+            </div>
+        </div>
+    </div>
+</div>
+

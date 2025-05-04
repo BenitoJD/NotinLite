@@ -1,0 +1,78 @@
+﻿@model NotinLite.Models.Note
+
+@{
+    ViewData["Title"] = "Edit Note";
+}
+
+@* Optional: Add reference to icon library if you use one *@
+@* Example using Font Awesome: Add CSS link in _Layout.cshtml head, or install package *@
+
+
+@* Center the form container *@
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        @* Adjusted column width slightly for better proportions *@
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0">@ViewData["Title"]</h4> @* Use h4 inside card-header *@
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+                    @* Display non-field validation errors nicely *@
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    @* Hidden field for the ID is essential *@
+                    <input type="hidden" asp-for="NoteId" />
+
+                    @* --- Editable Fields --- *@
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label> @* Use form-label *@
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="Enter note title" /> @* Larger input for title *@
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Content" class="form-label"></label>
+                        <textarea asp-for="Content" class="form-control" rows="10" placeholder="Enter note content..."></textarea>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                    </div>
+
+                    <hr class="my-4"> @* Add a visual separator *@
+
+                    @* --- Read-Only Fields --- *@
+                    <div class="row g-3 mb-3">
+                        @* Use a row for side-by-side dates *@
+                        <div class="col-md-6">
+                            <label asp-for="CreatedDate" class="form-label"></label>
+                            <input asp-for="CreatedDate" class="form-control bg-light" readonly /> @* Added bg-light *@
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="ModifiedDate" class="form-label"></label>
+                            <input asp-for="ModifiedDate" class="form-control bg-light" readonly /> @* Added bg-light *@
+                        </div>
+                    </div>
+
+                    @* --- Action Buttons --- *@
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        @* Use flexbox to align buttons right with gap *@
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div> @* End Card Body *@
+        </div> @* End Card *@
+
+    </div> @* End Column *@
+</div> @* End Row *@
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    @* Add other scripts here if needed, e.g., for a rich text editor *@
+}

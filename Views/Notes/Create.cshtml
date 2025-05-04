@@ -1,0 +1,131 @@
+﻿@model NotinLite.Models.Note
+
+@{
+    ViewData["Title"] = "Create New Note";
+}
+
+@* Optional: Add reference to icon library if you use one *@
+@* Example using Font Awesome: Add CSS link in _Layout.cshtml head, or install package *@
+
+
+@* Center the form container *@
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        @* Consistent width with Edit view *@
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus-circle me-2 text-success"></i> @ViewData["Title"] @* Optional Icon *@
+                </h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post">
+                    @Html.AntiForgeryToken()
+                    @* Display non-field validation errors nicely *@
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    @* --- Form Fields --- *@
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="Enter note title" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Content" class="form-label"></label>
+                        <textarea asp-for="Content" class="form-control" rows="10" placeholder="Enter note content..."></textarea>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                    </div>
+
+                    @* UserId, CreatedDate, ModifiedDate are set server-side, no inputs needed here *@
+
+                    @* --- Action Buttons (Moved to Footer below) --- *@
+                    @* Original button place removed *@
+
+                </form> @* Form tag still wraps inputs, but buttons are moved *@
+            </div> @* End Card Body *@
+
+            <div class="card-footer bg-light">
+                @* Light background for footer *@
+                @* Place buttons inside the footer, but outside the form tag if preferred, *@
+                @* OR keep them inside the form tag (as done here) for simplicity. *@
+                @* If outside, the form needs an ID and buttons need a form="formId" attribute. *@
+                <div class="d-flex justify-content-end gap-2">
+                    @* The form tag above needs to wrap these buttons, or use form attribute *@
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    @* Need to ensure this button submits the form defined in card-body *@
+                    <button type="submit" form="createNoteForm" class="btn btn-success">
+                        @* Use 'form' attribute if button is outside form tag *@
+                        <i class="fas fa-save me-1"></i>Create Note
+                    </button>
+                </div>
+            </div>@* End Card Footer *@
+
+
+        </div> @* End Card *@
+
+    </div> @* End Column *@
+</div> @* End Row *@
+
+
+@* --- CORRECTION: Need to ensure buttons submit the correct form --- *@
+@* Option 1 (Simpler): Keep buttons inside the form tag, move form tag to wrap footer *@
+@* Option 2 (Shown Below): Give form an ID and use 'form' attribute on submit button *@
+@* Re-arranging for Option 2: *@
+
+@* Center the form container *@
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus-circle me-2 text-success"></i> @ViewData["Title"]
+                </h4>
+            </div>
+            @* FORM TAG WRAPS CARD BODY ONLY *@
+            <form asp-action="Create" method="post" id="createNoteForm">
+                @* ADD ID TO FORM *@
+                <div class="card-body">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Title" class="form-label"></label>
+                        <input asp-for="Title" class="form-control form-control-lg" placeholder="Enter note title" />
+                        <span asp-validation-for="Title" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Content" class="form-label"></label>
+                        <textarea asp-for="Content" class="form-control" rows="10" placeholder="Enter note content..."></textarea>
+                        <span asp-validation-for="Content" class="text-danger"></span>
+                    </div>
+                </div> @* End Card Body *@
+            </form> @* END FORM TAG *@
+
+            <div class="card-footer bg-light">
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    @* BUTTON IS OUTSIDE FORM, USES 'form' ATTRIBUTE *@
+                    <button type="submit" class="btn btn-success" form="createNoteForm">
+                        <i class="fas fa-save me-1"></i>Create Note
+                    </button>
+                </div>
+            </div>@* End Card Footer *@
+
+        </div> @* End Card *@
+
+    </div> @* End Column *@
+</div> @* End Row *@
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    @* Add other scripts here if needed *@
+}
