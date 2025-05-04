@@ -1,61 +1,174 @@
 ﻿@model NotinLite.Models.Note
-
 @{
     ViewData["Title"] = "Note Details";
 }
 
-@* Optional: Add reference to icon library if you use one *@
-@* Example using Font Awesome: Add CSS link in _Layout.cshtml head, or install package *@
+<style>
+    :root {
+        --primary: #2563eb;
+        --success: #16a34a;
+        --secondary: #6b7280;
+        --text-muted: #6b7280;
+        --border: #e5e7eb;
+        --background: #f9fafb;
+        --editor-bg: #ffffff;
+    }
 
+    body.editor-page-active {
+        background-color: var(--background);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-@* Center the details container *@
-<div class="row justify-content-center">
-    <div class="col-md-9 col-lg-8">
-        @* Allow slightly wider column for content viewing *@
+    .editor-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        background-color: var(--editor-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 8rem);
+        overflow: hidden;
+    }
 
-        <div class="card shadow-sm">
-            <div class="card-header bg-light">
-                @* Light header background *@
-                <h4 class="mb-0">
-                    <i class="fas fa-sticky-note me-2 text-primary"></i> @* Optional Note Icon *@
-                    @Html.DisplayFor(model => model.Title)
-                </h4>
+    .editor-header {
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #fdfdff;
+        flex-shrink: 0;
+    }
+
+        .editor-header h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0;
+        }
+
+    .editor-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .note-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin-bottom: 1rem;
+        border-bottom: 1px dashed var(--border);
+        padding-bottom: 0.5rem;
+    }
+
+    .note-content {
+        font-size: 1rem;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        color: #111827;
+        margin-bottom: 2rem;
+    }
+
+    .note-metadata {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+        .note-metadata div {
+            flex: 1 1 100%;
+        }
+
+    @@media (min-width: 768px) {
+        .note-metadata div {
+            flex: 1 1 48%;
+        }
+    }
+
+    .note-metadata .fw-semibold {
+        font-weight: 600;
+        margin-right: 0.25rem;
+    }
+
+    .editor-footer {
+        padding: 0.75rem 1.5rem;
+        border-top: 1px solid var(--border);
+        background-color: #fdfdff;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .btn {
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn-success {
+        background-color: var(--success);
+        border-color: var(--success);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background-color: #15803d;
+            border-color: #15803d;
+        }
+
+    .btn-secondary {
+        background-color: #e5e7eb;
+        border-color: #e5e7eb;
+        color: #374151;
+    }
+
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+            border-color: #d1d5db;
+        }
+</style>
+
+<div class="editor-container">
+    <div class="editor-header">
+        <h4>@ViewData["Title"]</h4>
+        <span class="text-muted small">Status: Read Only</span>
+    </div>
+
+    <div class="editor-body">
+        <div class="note-title">@Model.Title</div>
+
+        <div class="note-content">
+            @Model.Content
+        </div>
+
+        <div class="note-metadata">
+            <div>
+                <span class="fw-semibold">Created:</span> @Model.CreatedDate.ToString("f")
             </div>
-            <div class="card-body">
-                <div class="note-content mb-4" style="white-space: pre-wrap; font-size: 1.1rem; line-height: 1.6;">
-                    @Html.DisplayFor(model => model.Content)
-                </div>
+            <div>
+                <span class="fw-semibold">Last Modified:</span> @Model.ModifiedDate.ToString("f")
+            </div>
+        </div>
+    </div>
 
-                <hr />
+    <div class="editor-footer">
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        <a asp-action="Edit" asp-route-id="@Model.NoteId" class="btn btn-success">Edit Note</a>
+    </div>
+</div>
 
-                <div class="note-metadata text-muted small">
-                    <div class="row">
-                        <div class="col-md-6 mb-2 mb-md-0">
-                            <strong>Created:</strong> @Model.CreatedDate.ToString("f") @* Full date/time format *@
-                        </div>
-                        <div class="col-md-6 text-md-end">
-                            @* Align right on medium+ screens *@
-                            <strong>Last Modified:</strong> @Model.ModifiedDate.ToString("f")
-                        </div>
-                    </div>
-                </div>
-            </div> @* End Card Body *@
-
-            <div class="card-footer bg-transparent border-top-0 pt-0">
-                @* Remove footer bg/border, remove top padding *@
-                <div class="d-flex justify-content-end gap-2">
-                    <a asp-action="Index" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-1"></i>Back to List
-                    </a>
-                    <a asp-action="Edit" asp-route-id="@Model.NoteId" class="btn btn-primary">
-                        <i class="fas fa-pencil-alt me-1"></i>Edit Note
-                    </a>
-                </div>
-            </div> @* End Card Footer *@
-
-        </div> @* End Card *@
-
-    </div> @* End Column *@
-</div> @* End Row *@
-
-@* No scripts needed specifically for this view usually *@
+@section Scripts {
+    <script>
+        document.body.classList.add('editor-page-active');
+    </script>
+}

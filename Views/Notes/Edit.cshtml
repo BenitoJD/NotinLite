@@ -1,78 +1,223 @@
 ﻿@model NotinLite.Models.Note
-
 @{
     ViewData["Title"] = "Edit Note";
 }
 
-@* Optional: Add reference to icon library if you use one *@
-@* Example using Font Awesome: Add CSS link in _Layout.cshtml head, or install package *@
+<style>
+    :root {
+        --primary: #2563eb;
+        --success: #16a34a;
+        --secondary: #6b7280;
+        --text-muted: #6b7280;
+        --border: #e5e7eb;
+        --background: #f9fafb;
+        --editor-bg: #ffffff;
+    }
 
+    body.editor-page-active {
+        background-color: var(--background);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-@* Center the form container *@
-<div class="row justify-content-center">
-    <div class="col-md-8 col-lg-7">
-        @* Adjusted column width slightly for better proportions *@
+    .editor-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        background-color: var(--editor-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - 8rem);
+        overflow: hidden;
+    }
 
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <h4 class="mb-0">@ViewData["Title"]</h4> @* Use h4 inside card-header *@
+    .editor-header {
+        padding: 0.75rem 1.5rem;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #fdfdff;
+        flex-shrink: 0;
+    }
+
+        .editor-header h4 {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 0;
+        }
+
+    form.editor-form {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .editor-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+        .editor-body .form-control,
+        .editor-body .form-control-lg {
+            border: none;
+            box-shadow: none;
+            padding-left: 0;
+            padding-right: 0;
+            border-radius: 0;
+            background-color: transparent;
+        }
+
+            .editor-body .form-control:focus {
+                box-shadow: none;
+                border-color: transparent;
+                outline: none;
+            }
+
+    input.title-input {
+        font-size: 1.5rem;
+        font-weight: 600;
+        border: none;
+        border-bottom: 1px dashed var(--border);
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+    }
+
+        input.title-input:focus {
+            border-bottom: 1px solid var(--primary);
+        }
+
+    textarea.content-input {
+        flex-grow: 1;
+        font-size: 1rem;
+        line-height: 1.7;
+        border: none;
+        resize: none;
+        min-height: 35vh;
+    }
+
+    .editor-footer {
+        padding: 0.75rem 1.5rem;
+        border-top: 1px solid var(--border);
+        background-color: #fdfdff;
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .btn {
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        transition: background-color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn-success {
+        background-color: var(--success);
+        border-color: var(--success);
+        color: white;
+    }
+
+        .btn-success:hover {
+            background-color: #15803d;
+            border-color: #15803d;
+        }
+
+    .btn-secondary {
+        background-color: #e5e7eb;
+        border-color: #e5e7eb;
+        color: #374151;
+    }
+
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+            border-color: #d1d5db;
+        }
+
+    .alert-danger {
+        border-radius: 6px;
+        font-size: 0.875rem;
+        padding: 0.75rem;
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .text-danger {
+        font-size: 0.75rem;
+        color: #dc2626;
+    }
+</style>
+
+<div class="editor-container">
+    <div class="editor-header">
+        <h4>@ViewData["Title"]</h4>
+        <div>
+            <span class="text-muted small me-3">Status: Editing</span>
+        </div>
+    </div>
+
+    <form asp-action="Edit" method="post" class="editor-form">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="NoteId" />
+
+        <div class="editor-body">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3" role="alert"></div>
+
+            <div class="mb-3">
+                <input asp-for="Title" class="form-control title-input" placeholder="Note Title..." />
+                <span asp-validation-for="Title" class="text-danger d-block mt-1"></span>
             </div>
-            <div class="card-body">
-                <form asp-action="Edit" method="post">
-                    @Html.AntiForgeryToken()
-                    @* Display non-field validation errors nicely *@
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
-                    @* Hidden field for the ID is essential *@
-                    <input type="hidden" asp-for="NoteId" />
-
-                    @* --- Editable Fields --- *@
-                    <div class="mb-3">
-                        <label asp-for="Title" class="form-label"></label> @* Use form-label *@
-                        <input asp-for="Title" class="form-control form-control-lg" placeholder="Enter note title" /> @* Larger input for title *@
-                        <span asp-validation-for="Title" class="text-danger"></span>
+            <div class="mb-3">
+                <div class="d-flex gap-3">
+                    <div class="flex-grow-1">
+                        <label asp-for="CreatedDate" class="form-label"></label>
+                        <input asp-for="CreatedDate" class="form-control" readonly />
                     </div>
-                    <div class="mb-3">
-                        <label asp-for="Content" class="form-label"></label>
-                        <textarea asp-for="Content" class="form-control" rows="10" placeholder="Enter note content..."></textarea>
-                        <span asp-validation-for="Content" class="text-danger"></span>
+                    <div class="flex-grow-1">
+                        <label asp-for="ModifiedDate" class="form-label"></label>
+                        <input asp-for="ModifiedDate" class="form-control" readonly />
                     </div>
+                </div>
+            </div>
 
-                    <hr class="my-4"> @* Add a visual separator *@
+            <div class="mb-0 flex-grow-1 d-flex flex-column">
+                <textarea asp-for="Content" class="form-control content-input" placeholder="Start writing your note here..."></textarea>
+                <span asp-validation-for="Content" class="text-danger d-block mt-1"></span>
+            </div>
+        </div>
 
-                    @* --- Read-Only Fields --- *@
-                    <div class="row g-3 mb-3">
-                        @* Use a row for side-by-side dates *@
-                        <div class="col-md-6">
-                            <label asp-for="CreatedDate" class="form-label"></label>
-                            <input asp-for="CreatedDate" class="form-control bg-light" readonly /> @* Added bg-light *@
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="ModifiedDate" class="form-label"></label>
-                            <input asp-for="ModifiedDate" class="form-control bg-light" readonly /> @* Added bg-light *@
-                        </div>
-                    </div>
-
-                    @* --- Action Buttons --- *@
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        @* Use flexbox to align buttons right with gap *@
-                        <a asp-action="Index" class="btn btn-secondary">
-                            <i class="fas fa-times me-1"></i>Cancel
-                        </a>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save me-1"></i>Save Changes
-                        </button>
-                    </div>
-                </form>
-            </div> @* End Card Body *@
-        </div> @* End Card *@
-
-    </div> @* End Column *@
-</div> @* End Row *@
+        <div class="editor-footer">
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-success">Save Changes</button>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-    @* Add other scripts here if needed, e.g., for a rich text editor *@
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.body.classList.add('editor-page-active');
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const titleInput = document.getElementById('Title');
+            const contentInput = document.getElementById('Content');
+            if (titleInput && contentInput) {
+                titleInput.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        contentInput.focus();
+                    }
+                });
+            }
+        });
+    </script>
 }
