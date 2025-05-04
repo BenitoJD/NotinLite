@@ -3,105 +3,290 @@
 
 @{
     ViewData["Title"] = "My Notes";
-    var userName = User.Identity?.Name;
+    var userName = User.FindFirst(ClaimTypes.Name)?.Value ?? "User";
+    int noteCount = Model.Count();
+    var lastEdited = Model.OrderByDescending(n => n.ModifiedDate).FirstOrDefault();
 }
 
-@* Optional: Add reference to icon library if you use one *@
-@* Example using Font Awesome: Add CSS link in _Layout.cshtml head, or install package *@
+<style>
+    :root {
+        --primary: #2563eb;
+        --success: #16a34a;
+        --danger: #dc2626;
+        --warning: #f59e0b;
+        --text: #111827;
+        --text-muted: #6b7280;
+        --background: #f9fafb;
+        --card-bg: #ffffff;
+        --card-hover: #f3f4f6;
+        --shadow: rgba(0, 0, 0, 0.05);
+    }
 
+    body.notes-page {
+        background-color: var(--background);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
 
-@* --- Display Status Messages --- *@
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-}
+    .hero-header {
+        background: linear-gradient(145deg, #e0eafc, #cfdef3);
+        border-radius: 12px;
+        padding: 2rem 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
 
-@* --- Header Section --- *@
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>@ViewData["Title"]</h1>
-        @if (!string.IsNullOrEmpty(userName))
-        {
-            <p class="lead mb-0">Welcome, @userName!</p>
+    .user-greeting {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 9999px;
+        background-color: var(--primary);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+    }
+
+    .note-card {
+        background-color: var(--card-bg);
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+        .note-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
-    </div>
-    <div>
-        <a asp-action="Create" class="btn btn-primary shadow-sm">
-            <i class="fas fa-plus me-1"></i> Create New Note
-        </a>
-    </div>
-</div>
 
+    .note-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+    }
 
-@if (!Model.Any())
-{
-    @* --- Enhanced "No Notes" State --- *@
-    <div class="text-center p-4 p-md-5 border rounded bg-light shadow-sm">
-        <i class="fas fa-sticky-note fa-3x text-muted mb-3"></i>
-        <h4 class="text-muted">No notes yet!</h4>
-        <p class="text-muted">Looks like your notepad is empty. Time to jot something down?</p>
-        <a asp-action="Create" class="btn btn-success mt-2">
-            <i class="fas fa-pen me-1"></i> Create your first note
-        </a>
+    .note-preview {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+    }
+
+    .note-footer {
+        border-top: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .note-date {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .btn-icon {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 0.875rem;
+    }
+
+    .btn-outline-info {
+        color: var(--primary);
+        border-color: var(--primary);
+    }
+
+        .btn-outline-info:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+    .btn-outline-primary {
+        color: var(--success);
+        border-color: var(--success);
+    }
+
+        .btn-outline-primary:hover {
+            background-color: var(--success);
+            color: white;
+        }
+
+    .btn-outline-danger {
+        color: var(--danger);
+        border-color: var(--danger);
+    }
+
+        .btn-outline-danger:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+    .search-bar {
+        max-width: 400px;
+        margin-bottom: 1.5rem;
+    }
+
+        .search-bar input {
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+            font-size: 0.95rem;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1.5rem;
+        background-color: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+    .quick-stats {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+</style>
+
+<div class="container notes-page py-5">
+    <div class="hero-header d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <h1 class="mb-1">@ViewData["Title"]</h1>
+            <div class="d-flex align-items-center gap-2">
+                <div class="user-avatar">@userName.Substring(0, 1)</div>
+                <div class="user-greeting">Welcome back, @userName</div>
+            </div>
+            <div class="quick-stats">
+                <span>Total Notes: <strong>@noteCount</strong></span> |
+                @if (lastEdited != null)
+                {
+                    <span>Last Edited: <strong>@lastEdited.ModifiedDate.ToString("MMM d")</strong></span>
+                }
+            </div>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-success shadow-sm">
+                <i class="fas fa-plus me-1"></i> Create New Note
+            </a>
+        </div>
     </div>
-}
-else
-{
-    @* --- Card Grid Layout --- *@
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        @* Responsive Grid: 1, 2, then 3 cols. g-4 adds gutters *@
-        @foreach (var item in Model)
-        {
-            <div class="col">
-                <div class="card h-100 shadow-sm">
-                    @* h-100 makes cards in same row equal height *@
-                    <div class="card-body d-flex flex-column">
-                        @* Use flex column to push footer down *@
-                        <h5 class="card-title">@Html.DisplayFor(modelItem => item.Title)</h5>
-                        <p class="card-text text-muted flex-grow-1">
-                            @* flex-grow-1 allows text to take available space *@
-                            @{
-                                const int previewLength = 150; // Slightly longer preview for cards
-                                string contentPreview = (item.Content?.Length ?? 0) > previewLength
-                                ? item.Content.Substring(0, previewLength).Trim() + "..." // Trim whitespace
-                                : item.Content ?? "";
-                            }
-                            @contentPreview @* Display preview directly, maybe limit lines with CSS later if needed *@
-                        </p>
-                        <p class="card-text mt-auto pt-2">
-                            @* mt-auto pushes this down. pt-2 adds space above. *@
-                            <small class="text-muted">
-                                Last updated: @item.ModifiedDate.ToString("g") @* Short date/time format *@
-                            </small>
-                        </p>
-                    </div>
-                    <div class="card-footer bg-transparent border-top-0 text-end">
-                        @* bg-transparent removes footer bg, border-top-0 removes line, text-end aligns buttons *@
-                        <a asp-action="Details" asp-route-id="@item.NoteId" class="btn btn-sm btn-outline-info me-1" title="Details">
-                            <i class="fas fa-eye"></i> @* Details Icon *@
-                        </a>
-                        <a asp-action="Edit" asp-route-id="@item.NoteId" class="btn btn-sm btn-outline-primary me-1" title="Edit">
-                            <i class="fas fa-pencil-alt"></i> @* Edit Icon *@
-                        </a>
-                        <a asp-action="Delete" asp-route-id="@item.NoteId" class="btn btn-sm btn-outline-danger" title="Delete">
-                            <i class="fas fa-trash-alt"></i> @* Delete Icon *@
-                        </a>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i> @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="search-bar position-relative mb-4">
+        <input type="text" id="noteSearch" class="form-control" placeholder="🔍 Search notes by title or content..." />
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="fas fa-sticky-note"></i>
+            <h4>No notes yet!</h4>
+            <p class="mb-3">Looks like your notepad is empty. Time to jot something down?</p>
+            <a asp-action="Create" class="btn btn-success mt-2">
+                 Create your first note
+            </a>
+        </div>
+    }
+    else
+    {
+        <div id="notesGrid" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col note-card-wrapper" data-title="@item.Title.ToLower()" data-content="@item.Content?.ToLower()">
+                    <div class="card note-card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="note-title">@Html.DisplayFor(modelItem => item.Title)</h5>
+                            <p class="note-preview">@item.Content</p>
+                            <p class="note-date mt-auto pt-2">
+                                Last updated: @item.ModifiedDate.ToString("g")
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent note-footer">
+                            <a asp-action="Details"
+                               asp-route-id="@item.NoteId"
+                               class="btn btn-outline-info btn-sm me-1"
+                               title="Details">
+                                <span>Details</span>
+                            </a>
+
+                            <a asp-action="Edit"
+                               asp-route-id="@item.NoteId"
+                               class="btn btn-outline-primary btn-sm me-1"
+                               title="Edit">
+                                <span>Edit</span>
+                            </a>
+
+                            <a asp-action="Delete"
+                               asp-route-id="@item.NoteId"
+                               class="btn btn-outline-danger btn-sm"
+                               title="Delete">
+                                <span>Delete</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
-}
+            }
+        </div>
+    }
+</div>
 
-@* Keep the Scripts section if needed for other page-specific scripts later *@
-@* @section Scripts { ... } *@
+@section Scripts {
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
+        document.getElementById('noteSearch').addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            const cards = document.querySelectorAll('.note-card-wrapper');
+
+            cards.forEach(card => {
+                const title = card.dataset.title || '';
+                const content = card.dataset.content || '';
+                if (title.includes(query) || content.includes(query)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}
