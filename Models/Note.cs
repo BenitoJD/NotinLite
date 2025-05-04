@@ -13,8 +13,11 @@ namespace NotinLite.Models
         [StringLength(100)]
         public string Title { get; set; } = string.Empty;
 
+        [NotMapped]
         [DataType(DataType.MultilineText)]
         public string Content { get; set; } = string.Empty;
+
+        public string EncryptedContent { get; set; } = string.Empty;
 
         [DataType(DataType.DateTime)]
         [Display(Name = "Created Date")]

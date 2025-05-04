@@ -1,5 +1,10 @@
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.EntityFrameworkCore; 
 using NotinLite.Data;
+using Microsoft.AspNetCore.DataProtection;
+
+
 
 
 
@@ -18,7 +23,13 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Cookies.C
         options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
-
+var dataProtectionBuilder = builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(@"C:\cryptokeyDoNotDelete")).UseCryptographicAlgorithms(new AuthenticatedEncryptorConfiguration()
+        {
+            EncryptionAlgorithm = EncryptionAlgorithm.AES_256_CBC,
+            ValidationAlgorithm = ValidationAlgorithm.HMACSHA256
+        });
+dataProtectionBuilder.SetApplicationName("NotinLiteApp");
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddAuthorization();

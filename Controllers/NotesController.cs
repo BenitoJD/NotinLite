@@ -5,18 +5,23 @@ using NotinLite.Data;
 using NotinLite.Models;
 using System.Linq; 
 using System.Security.Claims; 
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.DataProtection;
+using NotinLite.ViewModels;
+using System.Security.Cryptography;
 
 namespace NotinLite.Controllers
 {
     [Authorize]
     public class NotesController : Controller
     {
-        private readonly ApplicationDbContext _context; 
+        private readonly ApplicationDbContext _context;
+        private readonly IDataProtector _protector; 
 
-        public NotesController(ApplicationDbContext context)
+        public NotesController(ApplicationDbContext context, IDataProtectionProvider provider)
         {
             _context = context;
+            _protector = provider.CreateProtector("NotinLite.Notes.Content.v1");
         }
         public async Task<IActionResult> Index()
         {
@@ -36,9 +41,19 @@ namespace NotinLite.Controllers
             var userNotes = await _context.Notes
                                           .Where(note => note.UserId == userId)
                                           .OrderByDescending(note => note.ModifiedDate)
-                                          .ToListAsync(); 
+                                          .ToListAsync();
 
-            return View(userNotes);
+            var noteViewModels = userNotes.Select(note => new Note
+            {
+                NoteId = note.NoteId,
+                Title = note.Title,
+                Content = DecryptNoteContent(note.EncryptedContent),
+                ModifiedDate = note.ModifiedDate,
+                CreatedDate = note.CreatedDate
+                                                                     
+            }).ToList();
+
+            return View(noteViewModels);
         }
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
@@ -56,6 +71,13 @@ namespace NotinLite.Controllers
 
             var note = await _context.Notes
                                      .FirstOrDefaultAsync(n => n.NoteId == id && n.UserId == userId);
+            var encryptedContent = note?.EncryptedContent ?? string.Empty;
+            var decryptContent = DecryptNoteContent(encryptedContent);
+
+            if (note != null)
+            {
+                note.Content = decryptContent;
+            }
 
             if (note == null)
             {
@@ -80,6 +102,13 @@ namespace NotinLite.Controllers
 
             var note = await _context.Notes
                                      .FirstOrDefaultAsync(m => m.NoteId == id && m.UserId == userId);
+            var encryptedContent = note?.EncryptedContent ?? string.Empty;
+            var decryptContent = DecryptNoteContent(encryptedContent);
+
+            if (note != null)
+            {
+                note.Content = decryptContent;
+            }
 
             if (note == null)
             {
@@ -160,10 +189,14 @@ namespace NotinLite.Controllers
             {
                 try
                 {
-                    _context.Update(noteToUpdate); 
-                    await _context.SaveChangesAsync(); 
+                    noteToUpdate.Title = note.Title;
+                    noteToUpdate.EncryptedContent = _protector.Protect(note.Content ?? "");
+                    noteToUpdate.ModifiedDate = DateTime.UtcNow;
+
+                    _context.Update(noteToUpdate);
+                    await _context.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Note updated successfully!";
-                    return RedirectToAction(nameof(Index)); 
+                    return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -205,6 +238,13 @@ namespace NotinLite.Controllers
            
             var note = await _context.Notes
                                      .FirstOrDefaultAsync(m => m.NoteId == id && m.UserId == userId);
+            var encryptedContent = note?.EncryptedContent ?? string.Empty;
+            var decryptContent = DecryptNoteContent(encryptedContent);
+
+            if (note != null)
+            {
+                note.Content = decryptContent;
+            }
 
             if (note == null)
             {
@@ -242,17 +282,42 @@ namespace NotinLite.Controllers
             ModelState.Remove(nameof(note.ModifiedDate));
             ModelState.Remove(nameof(note.User));
 
-
+            
             if (ModelState.IsValid)
             {
-                _context.Add(note);
+                string encryptedContent = _protector.Protect(note.Content ?? "");
 
+                var notes = new Note
+                {
+                    Title = note.Title,
+                    EncryptedContent = encryptedContent,
+                    UserId = userId,
+                    CreatedDate = DateTime.UtcNow,
+                    ModifiedDate = DateTime.UtcNow
+                };
+
+                _context.Add(notes);
                 await _context.SaveChangesAsync();
-
-                TempData["SuccessMessage"] = "Note created successfully!"; 
-                return RedirectToAction(nameof(Index)); 
+                TempData["SuccessMessage"] = "Note created successfully!";
+                return RedirectToAction(nameof(Index));
             }
             return View(note);
+        }
+        private string DecryptNoteContent(string encryptedContent)
+        {
+            if (string.IsNullOrEmpty(encryptedContent))
+            {
+                return string.Empty;
+            }
+            try
+            {
+                return _protector.Unprotect(encryptedContent);
+            }
+            catch (CryptographicException)
+            {
+                
+                return "[Content Could Not Be Decrypted]";
+            }
         }
     }
 }
